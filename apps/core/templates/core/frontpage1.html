@@ -1,0 +1,78 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Welcome|{% endblock %}
+
+{% block contents %}
+    <main class="container-fluid mainContent">
+        <div class="row">
+            <div class="col-lg-8 col-md-6 col-sm-12 mainImg">
+                <img src="{% static 'images/blackgirl3.jpg' %}" alt="">
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-12 text">
+                <h2>Your Journey to Healthy and Flawless Skin <span>Starts Here</span></h2>
+                <p>Embark on your journey to healthy and flawless skin with our meticulously crafted skincare solutions, designed to nurture and enhance your natural beauty from within, leaving you with radiant and rejuvenated skin every day.</p>
+                <a class="btn" href="#">Shop</a>
+            </div>
+        </div>
+    </main>
+
+    <section class="container-fluid featuredProducts">
+        <div class="row">
+            <div class="col">
+                <h2 class="titleText"><span>S</span>hop By Brands</h2>
+                <p>Elevate Your Experience: Explore Our Curated Collection of Top Brands</p>
+            </div>
+        </div>
+
+    </section>
+    <section class="product">
+        <button class="pre-btn"><img src="{% static 'images/arrow.png' %}" alt=""></button>
+        <button class="nxt-btn"><img src="{% static 'images/arrow.png' %}" alt=""></button>
+        <div class="product-container">
+            {% for brand in brands_category %}  
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="{{ brand.image.url }}" alt="{{ brand.title }}">
+                        <a href="{% url 'brand_details' brand.slug %}" class="card-btn">View</a>
+                    </div>
+                    <div class="product-info">
+                        <h2 class="product-brand">{{ brand.title }}</h2>  
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="container-fluid featuredProducts">
+        <div class="row">
+            <div class="col">
+                <h2 class="titleText"><span>F</span>eatured Products</h2>
+                <p>Elevate Your Experience: Explore Our Curated Collection of Top Products</p>
+            </div>
+        </div>
+    </section>
+
+    {% with products as product_slider %}
+        {% include 'core/parts/product_slider.html' %}
+    {% endwith %}
+
+    <script type="text/javascript">
+        const productContainers = [...document.querySelectorAll('.product-container')];
+        const nxtBtn = [...document.querySelectorAll('.nxt-btn')];
+        const preBtn = [...document.querySelectorAll('.pre-btn')];
+
+        productContainers.forEach((item, i) => {
+            let containerDimensions = item.getBoundingClientRect();
+            let containerWidth = containerDimensions.width;
+
+            nxtBtn[i].addEventListener('click', () => {
+                item.scrollLeft += containerWidth;
+            });
+
+            preBtn[i].addEventListener('click', () => {
+                item.scrollLeft -= containerWidth;
+            });
+        });
+    </script>
+{% endblock %}

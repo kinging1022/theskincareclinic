@@ -1,0 +1,119 @@
+{% extends 'core/base.html' %}
+{% block title %}{{product.title}}|{% endblock %}
+
+
+{% block contents %}
+
+    <div class="container mt-5" id="product-app">
+        <div class="detail">
+            <div class="image mt-5">
+                <img :src="mainImage">
+                {% if product.images.all %}
+                 <hr>
+                 <div class="more-images mt-5">
+                    <div v-for="image in images" :key="image.id ">
+                        <div>
+                             <img :src="image.thumbnail" @click="changeMainImage(image.image)" class="card-img-top img-thumbnail">
+                        </div>
+                    </div>
+                </div>
+                 {% endif %}
+                
+            </div>
+    
+            <div class="content">
+                <h1 class="name">{{product.title}}</h1>
+                <div class="price">{{product.price}}</div>
+                <div class="buttons">
+                    <button>Check Out</button>
+                    {% if product.in_cart %}
+                        <h5 class="text-success">Already in cart</h5>
+                    {% else %}
+                        {% if product.num_available > 0 %}
+                        <button @click="addToCart({{product.id}})">Add To Cart 
+                            <span>
+                                <svg class="" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 15a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0h8m-8 0-1-4m9 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-9-4h10l2-7H3m2 7L3 4m0 0-.792-3H1"/>
+                                </svg>
+                            </span>
+                        </button>
+                            
+                        {% else %}
+                            <h5 class="text-danger">Product is out of stock</h5>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="description">{{product.description}}</div>
+            </div>
+        </div>
+
+        <h5 v-if="showMessage" class="text-success mt-3 mb-3"> This product was added to the  cart 😀</h5>
+        
+
+        <h3 class="title text-center mt-5">Similar products</h3>
+
+        {% with similar_products as product_slider %}
+            {% include 'core/parts/product_slider.html' %}
+        {% endwith %}
+        
+    </div>
+
+    {% endblock %}
+
+    {% block scripts %}
+    <script>
+        createApp({
+            data() {
+                return {
+                    mainImage: '{{ product.image.url }}',
+                    images: [{{ imagesstring | safe }}],
+                    showMessage: false,
+                };
+            },
+            mounted() {
+            console.log('Mounted');
+        },
+            delimiters: ['[[', ']]'],
+            store: store,
+            methods: {
+                changeMainImage(image) {
+                    this.mainImage = image;
+                },
+                addToCart(product_id) {
+                    var data = {
+                        'product_id':product_id,
+                        'update': false,
+                        'quantity': 1,
+                    };
+                    fetch('/api/add_to_cart/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify(data)
+                    })
+                    .then((response) => {
+                        console.log('Response',response)
+                        this.showMessage = true;
+                        store.commit('increment', 1);
+                       
+
+                        setTimeout(() => {
+                            this.showMessage = false;
+                        }, 2000);
+                    })
+                    .catch(function(error) {
+                        console.log('Error:', error);
+                    });
+                },
+            },
+        }).mount('#product-app');
+    </script>
+
+    {% endblock %}
+
+
+
+

@@ -1,0 +1,30 @@
+{% load static %}
+
+<section class="product">
+    <button class="pre-btn"><img src="{% static 'images/arrow.png' %}" alt=""></button>
+    <button class="nxt-btn"><img src="{% static 'images/arrow.png' %}" alt=""></button>
+    <div class="product-container">
+        {% for p in product_slider %}  
+            <div class="product-card">
+                <div class="product-image">
+                    {% if p.discount_price %}
+                        <span class="discount-tag">{{ p.discount_percentage }}% off</span>
+                    {% endif %}
+                    <img src="{{ p.image.url }}" alt="{{ p.title }}">
+                    <a href="{% url 'product_details' p.category.slug p.slug %}" class="card-btn">View</a>
+
+                </div>
+                <div class="product-info">
+                    <h2 class="product-brand">{{ p.brand.title }}</h2>  
+                    <p class="product-short-description">{{ p.description|truncatechars:30 }}</p>
+                    {% if product.discount_price %}
+                        <span class="price">${{ p.discount_price }}</span>
+                        <span class="actual-price">${{ p.price }}</span>
+                    {% else %}
+                        <span class="price">${{ p.price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
