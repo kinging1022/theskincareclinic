@@ -1,0 +1,21 @@
+# Python byte-code cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+
+# Virtual environment
+venv/
+
+# Test output
+*.log
+*.out
+*.err
+
+# IDE-specific files
+.idea/
+.vscode/
+
+# System-specific files
+.DS_Store
