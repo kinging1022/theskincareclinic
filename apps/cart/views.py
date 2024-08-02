@@ -17,3 +17,11 @@ def cart(request):
 
     context = {'cart':cart, 'productstring':productstring}
     return render(request,'cart/cart.html',context)
+
+
+
+def success(request):
+    cart = Cart(request)
+    cart.clear()
+
+    return render(request,'cart/success.html')

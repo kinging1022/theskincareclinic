@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import environ
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,6 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+load_dotenv()
 
 #cart
 SESSION_COOKIE_AGE = 86400
@@ -35,6 +38,10 @@ CART_SESSION_ID = 'cart'
 
 
 #Api_key
+env = environ.Env()
+#environ.Env.read_env()
+PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY')
+
 
 
 # Application definition
@@ -50,6 +57,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.cart',
     'apps.order',
+    'apps.coupon',
 ]
 
 MIDDLEWARE = [

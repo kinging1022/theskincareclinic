@@ -1,6 +1,5 @@
 {% extends 'core/base.html' %}
-{% block title %} cart| {% endblock %}
-
+{% block title %} cart | {% endblock %}
 
 {% block contents %}
 <div class="container mt-5" id="cart-app">
@@ -19,15 +18,21 @@
             </thead>
             <tbody>
                 <tr v-for="product in products" :key="product.id">
-                    <td><img :src="product.thumbnail" alt="" class="img-thumbnail" style="max-width: 40px;"></td>
-                    <td><a :href="product.url">[[ product.title ]]</a></td>
                     <td>
-                        <button @click="decrement(product.id,product.quantity,product.price)"> - </button>
+                        <img :src="product.thumbnail" alt="" class="img-thumbnail" style="max-width: 40px;">
+                    </td>
+                    <td>
+                        <a :href="product.url">[[ product.title ]]</a>
+                    </td>
+                    <td>
+                        <button @click="decrement(product.id, product.quantity, product.price)"> - </button>
                         [[ product.quantity ]]
-                        <button @click="increment(product.id,product.quantity,product.price)"> + </button>
+                        <button @click="increment(product.id, product.quantity, product.price)"> + </button>
                     </td>
                     <td>[[ product.total_price ]]</td>
-                    <td><button @click="remove(product.id,product.quantity,product.price)">Remove from cart</button></td>
+                    <td>
+                        <button @click="remove(product.id, product.quantity, product.price)">Remove from cart</button>
+                    </td>
                 </tr>
             </tbody>
             <tfoot>
@@ -38,12 +43,23 @@
                     <td>[[ totalCost ]]</td>
                     <td></td>
                 </tr>
+                <tr v-if="coupon_value">
+                    <td colspan="3">Total with coupon</td>
+                    <td>[[totalCostWithCoupon]]</td>
+                </tr>
             </tfoot>
         </table>
+        <hr>
+        <div>
+            Code value: <br>
+            <input type="text" v-model="coupon_code"> <br>
+            <button @click="applyCoupon()">Apply</button>
+        </div>
+
         <div class="container my-5">
             <div class="row">
                 <div class="col-lg-6 col-md-12 col-sm-12">
-                    <form @submit.prevent="submitForm()">
+                    <form @submit.prevent="validateForm()">
                         <div class="mb-3">
                             <label for="first_name" class="form-label">First Name</label>
                             <input type="text" name="first_name" id="first_name" class="form-control" v-model="first_name">
@@ -61,7 +77,7 @@
                             <input type="text" name="address" id="address" class="form-control" v-model="address">
                         </div>
                         <div class="mb-3">
-                            <label for="address" class="form-label">Phone</label>
+                            <label for="phone" class="form-label">Phone</label>
                             <input type="text" name="phone" id="phone" class="form-control" v-model="phone">
                         </div>
                         <div class="mb-3">
@@ -73,175 +89,192 @@
         </div>
     </div>
 
-    
-
     <p v-else>Your cart is empty</p>
 </div>
-
 {% endblock %}
-
 
 {% block scripts %}
 <script>
+
     createApp({
         data() {
             return {  
-                    error:[],
-                    products: [{{productstring|safe}}],
-                    first_name : '',
-                    last_name : '',
-                    email: '',
-                    address: '',
-                    phone: '',
-
-                }
+                errors: [],
+                products: [{{ productstring|safe }}],
+                first_name: '',
+                last_name: '',
+                email: '',
+                address: '',
+                phone: '',
+                coupon_value:0,
+                coupon_code:'',
+                showCouponCodeError:false
+            };
         },
         mounted() {
             console.log(this.products);
         },
         delimiters: ['[[', ']]'],
-        store:store,
-        computed:{
-            numItems(){
+        store: store,
+        computed: {
+            numItems() {
                 return store.state.numItems;
             },
-            totalCost(){
-                return store.state.totalCost
+            totalCost() {
+                return store.state.totalCost;
+            },
+            totalCostWithCoupon: function(){
+                if (this.coupon_value > 0){
+                    return store.state.totalCost - parseInt(this.coupon_value)
+                }else{
+                    return store.state.totalCost;
+                }
             }
         },
-        
-        methods:{
-            validateForm(){
-                this.error = [];
-                if(this.first_name === ''){
-                        this.errors.push('First name is empty')
-                    }
-                    if(this.last_name ===''){
-                        this.errors.push('Last name is empty')
-                    }
-                    if(this.email ===''){
-                        this.errors.push('Email is empty')
-                    }
-                    if(this.address ===''){
-                        this.errors.push('Address is empty')
-                    }
-                    if(this.zipcode ===''){
-                        this.errors.push('zipcode is empty')
-                    }
-                    if(this.place ===''){
-                        this.errors.push('place is empty')
-                    }
-                    return this.errors.length
-
-
+        methods: {
+            validateForm() {
+                this.errors = [];
+                if (this.first_name === '') this.errors.push('First name is empty');
+                if (this.last_name === '') this.errors.push('Last name is empty');
+                if (this.email === '') this.errors.push('Email is empty');
+                if (this.address === '') this.errors.push('Address is empty');
+                if (this.phone === '') this.errors.push('Phone is empty');
+                return this.errors.length;
             },
-            buy(){
-                var data = {
+            applyCoupon(){
+                if (this.coupon_code !== " "){
+                    fetch('/api/can_use/?coupon_code='+ this.coupon_code,{
+                        method: 'GET'
+                    })
+                    .then((response) =>{
+                        return response.json();
+                    })
+                    .then((data)=>{
+                        if (data.amount){
+                            this.showCouponCodeError = false
+                            this.coupon_value = parseInt(data.amount)
+                        }else{
+                            this.coupon_value = 0
+                            this.showCouponCodeError = true
+                        }
+                    })
+                }else{
+                    this.showCouponCodeError = true
+                }
+            },
+             buy() {
+                const data = {
                     'first_name': this.first_name,
                     'last_name': this.last_name,
                     'email': this.email,
                     'phone': this.phone,
-                    'address': this.address
-
-                }
-                if (this.validateForm() === 0){
-
+                    'address': this.address,
+                    'coupon_code': this.coupon_code
+                };
+                if (this.validateForm() === 0) {
+                    fetch('/api/create_checkout_session/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify(data)
+                    })
+                    .then(response =>  response.json())
+                    .then(data => {
+                        if (data.redirect_url){
+                            window.location.href = data.redirect_url; 
+                        }else{
+                            console.error('Error:' ,data.error)
+                        }
+                    })
+                    .catch(error =>{
+                        console.error('Fetch error:',error)
+                    })
+                   
+                  
                 }
             },
             increment(product_id, quantity, price) {
-                    console.log('product_id:', product_id)
-                    for ( var i=0; i < this.products.length; i++){
-                        var product = this.products[i];
-
-                        if (product.id == product_id){
-                            if(quantity < product.num_available){
- 
-                                    var data = {
-                                    'product_id': product_id,
-                                    'update': true,
-                                    'quantity': parseInt(quantity + 1)
-                                }
-                                store.commit('increment',1)
-                                store.commit('changeTotalCost',parseFloat( price))
-                                fetch('/api/add_to_cart/', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-type': 'application/json',
-                                            'X-CSRFToken': '{{csrf_token}}'
-                                        },
-                                        credentials: 'same-origin',
-                                        body: JSON.stringify(data)
-                                    })
-                                    .then((response) => {
-                                        console.log(response)
-                                        for (var i = 0; i < this.products.length; i++) {
-                                            var product = this.products[i];
-                                            if (product.id === product_id) {
-                                                this.products[i].quantity = parseInt(this.products[i].quantity) + 1;
-                                                this.products[i].total_price = parseInt(this.products[i].quantity) * parseFloat(this.products[i].price)
-                                                
-                                                }
-                                                
-                                        }
-                                        
-                                        })
-                                    .catch(function(error) {
-                                        console.log('Error 2');
-                                    })
-
-                            }else{
-                            alert('No more available in stock ')
-                        }
-                        }
-                    }
-                    
-                },
-            decrement(product_id,quantity,price){
-                var data ={
-                    'product_id': product_id,
-                    'update': true,
-                    'quantity': parseInt(quantity) - 1
-                }
-                if (parseInt(quantity)-1 === 0){
-                    this.remove(product_id,quantity,price)
-                }else{
-                    store.commit('increment',-1)
-                    store.commit('changeTotalCost', - parseFloat( price))
-                    fetch('/api/add_to_cart/', {
+                console.log('product_id:', product_id);
+                for (let product of this.products) {
+                    if (product.id == product_id) {
+                        if (quantity < product.num_available) {
+                            const data = {
+                                'product_id': product_id,
+                                'update': true,
+                                'quantity': parseInt(quantity + 1)
+                            };
+                            store.commit('increment', 1);
+                            store.commit('changeTotalCost', parseFloat(price));
+                            fetch('/api/add_to_cart/', {
                                 method: 'POST',
                                 headers: {
-                                    'Content-type': 'application/json',
-                                    'X-CSRFToken': '{{csrf_token}}'
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
                                 },
                                 credentials: 'same-origin',
                                 body: JSON.stringify(data)
                             })
-                            .then((response) => {
-                                for (var i = 0; i < this.products.length; i++) {
-                                var product = this.products[i];
-        
-                                if (product.id === product_id) {
-                                    this.products[i].quantity = parseInt(this.products[i].quantity) - 1;
-                                    this.products[i].total_price = parseInt(this.products[i].quantity) * parseFloat(this.products[i].price)
+                            .then(response => {
+                                for (let product of this.products) {
+                                    if (product.id === product_id) {
+                                        parseInt(product.quantity++);
+                                        product.total_price = parseInt(product.quantity) * parseFloat(product.price);
+                                    }
                                 }
-                            }
-                                
-                                
-                                })
-                            .catch(function(error) {
-                                console.log('Error 2');
                             })
-
+                            .catch(error => {
+                                console.error('Error:', error);
+                                this.error = 'An error occurred: ' + error.message;
+                            });
+                        } else {
+                            alert('No more available in stock');
+                        }
+                    }
                 }
-
             },
-            remove(product_id,quantity,price){
-                var data = {
-                    'product_id':product_id
+            decrement(product_id, quantity, price) {
+                const data = {
+                    'product_id': product_id,
+                    'update': true,
+                    'quantity': parseInt(quantity - 1)
+                };
+                if (parseInt(quantity) - 1 === 0) {
+                    this.remove(product_id, quantity, price);
+                } else {
+                    store.commit('increment', -1);
+                    store.commit('changeTotalCost', - parseFloat(price));
+                    fetch('/api/add_to_cart/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        for (let product of this.products) {
+                            if (product.id === product_id) {
+                                parseInt(product.quantity--);
+                                product.total_price = parseInt(product.quantity) * parseFloat(product.price);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
                 }
-                store.commit('increment',-parseInt(quantity))
-                store.commit('changeTotalCost', -(parseInt(quantity) * parseFloat( price)))
-                fetch('/api/remove_from_cart/',{
+            },
+            remove(product_id, quantity, price) {
+                const data = {
+                    'product_id': product_id
+                };
+                store.commit('increment', parseInt(-quantity));
+                store.commit('changeTotalCost', -(parseInt(quantity) * parseFloat(price)));
+                fetch('/api/remove_from_cart/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -250,20 +283,14 @@
                     credentials: 'same-origin',
                     body: JSON.stringify(data)
                 })
-                .then((response)=>{
-                    console.log(response)
-                    this.products = this.products.filter(product=> product.id !== product_id)
+                .then(response => {
+                    this.products = this.products.filter(product => product.id !== product_id);
                 })
-                .catch(function (error) {
-                    console.log('Error 2');
-                    console.log(error);
-                })
-
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             }
-            
-        },
+        }
     }).mount('#cart-app');
 </script>
-
-
 {% endblock %}

@@ -23,7 +23,7 @@ class Order(models.Model):
    
    paid = models.BooleanField(default=False)
    paid_amount = models.FloatField(blank=True, null=True)
-   transaction_ref = models.CharField(max_length=225)
+   transaction_ref = models.CharField(max_length=225,null=True,blank=True,editable=False)
    used_coupon = models.CharField(max_length=50, blank=True, null=True)
    shipped_date = models.DateTimeField(blank=True, null=True)
    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=ORDERED)
