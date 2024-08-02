@@ -7,6 +7,7 @@ __pycache__/
 
 # Virtual environment
 myenv/
+.env
 
 # Test output
 *.log
