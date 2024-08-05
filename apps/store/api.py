@@ -31,9 +31,12 @@ def api_create_checkout_session(request):
             order_id = checkout(request, data['first_name'],data['last_name'],data['email'],data['address'],data['phone'])
             
             
-            amount = cart.get_total_cost()
+            total_cost = cart.get_total_cost()
             if coupon_value > 0:
-                amount = cart.get_total_cost() - coupon_value
+                amount = total_cost - coupon_value
+                print(amount)
+            else:
+                amount = total_cost
             
             
             try:                
@@ -44,7 +47,9 @@ def api_create_checkout_session(request):
                 # Metadata for checkout session
                 metadata = json.dumps({
                     "order_id" : order_id,
-                    "cancel_action": 'http://127.0.0.1:8000/cart/'  
+                    "cancel_action": 'http://127.0.0.1:8000/cart/',
+                    "coupon_code": coupon_code
+
                 })
 
                 # Paystack checkout session data

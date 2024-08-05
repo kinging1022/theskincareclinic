@@ -23,14 +23,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z+93ry-ryi7y!v(%@+qle6v-!8)(1y@+q&0yp&on6$mxhp(1ql'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['0572-102-89-33-224.ngrok-free.app','127.0.0.1']
 
 load_dotenv()
+env = environ.Env()
+
+#EMAIL
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'emmanuelemmy0906@gmail.com'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = 'emmanuelemmy0906@gmail.com'
+
 
 #cart
 SESSION_COOKIE_AGE = 86400
@@ -38,7 +50,6 @@ CART_SESSION_ID = 'cart'
 
 
 #Api_key
-env = environ.Env()
 #environ.Env.read_env()
 PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY')
 

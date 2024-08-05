@@ -55,6 +55,10 @@
             <input type="text" v-model="coupon_code"> <br>
             <button @click="applyCoupon()">Apply</button>
         </div>
+        <div class="alert alert-warning" role="alert" v-if="showCouponCodeError">
+            <p>The coupon code is not valid!</p>
+        </div>
+        
 
         <div class="container my-5">
             <div class="row">

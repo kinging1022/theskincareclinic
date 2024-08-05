@@ -1,6 +1,3 @@
-import uuid
-import time
-from datetime import datetime
 
 from apps.cart.cart import Cart
 
