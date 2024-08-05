@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.sitemaps.views import sitemap
 from apps.core.views import frontpage
 from apps.store.views import category_details, product_details, brand_details
 from apps.store.api import api_add_to_cart , api_remove_from_cart , api_create_checkout_session
@@ -25,6 +26,10 @@ from apps.coupon.api import api_can_use
 from apps.cart.views import cart , success
 from apps.cart.webhook import paystack_webhook
 from apps.order.views import admin_order_pdf
+
+from .sitemap  import StaticViewSitemap, CategorySitemap, ProductSitemap
+
+sitemaps = {'static': StaticViewSitemap, 'product':ProductSitemap, 'category': CategorySitemap }
 
 
 
@@ -42,6 +47,7 @@ urlpatterns = [
     path('brand/<slug:brand_slug>/', brand_details, name='brand_details'), 
     path('<slug:category_slug>/<slug:slug>/', product_details, name='product_details'),
     path('<slug:slug>/', category_details, name='category_details'),
+    path("sitemap.xml", sitemap, {"sitemaps":sitemaps}, name="django.contrib.sitemaps.views.sitemap"),
     
     
     #api

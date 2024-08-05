@@ -3,6 +3,7 @@ from django.utils.text import slugify
 from PIL import Image
 from io import BytesIO
 from django.core.files import File
+from django.urls import reverse
 
 # Create your models here.
 
@@ -26,6 +27,9 @@ class Category(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('category_details', kwargs={'slug': self.slug})
 
 
 
@@ -74,6 +78,9 @@ class Product(models.Model):
 
     class Meta:
         ordering = ('-date_added',)
+
+    def get_absolute_url(self):
+        return reverse ('product_details', args=[self.category.slug, self.slug])
 
 
     def __str__(self) -> str:

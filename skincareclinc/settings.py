@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     'apps.cart',
     'apps.order',
     'apps.coupon',
+    'django.contrib.sitemaps',
+
 ]
 
 MIDDLEWARE = [
