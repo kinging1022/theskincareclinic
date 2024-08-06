@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0572-102-89-33-224.ngrok-free.app','127.0.0.1']
+ALLOWED_HOSTS = ['4786-102-88-82-111.ngrok-free.app','127.0.0.1']
 
 load_dotenv()
 env = environ.Env()

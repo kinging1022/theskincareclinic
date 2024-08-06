@@ -16,10 +16,12 @@ def product_details(request,category_slug,slug):
     product = get_object_or_404(Product,slug=slug)
     similar_products = product.category.products.all()
 
-    imagesstring = "{'thumbnail': '%s', 'image': '%s'}," % (product.thumbnail.url, product.image.url)
+    imagelist = []
     
     for image in product.images.all():
-        imagesstring = imagesstring + ("{'thumbnail': '%s', 'image': '%s'}," % (image.thumbnail.url, image.image.url))
+        more_images = {'thumbnail': image.thumbnail.url, 'image': image.image.url}
+
+        imagelist.append(more_images)
     
     
     cart = Cart(request)
@@ -32,7 +34,7 @@ def product_details(request,category_slug,slug):
     
     context = {
         'product':product,
-        'imagesstring':imagesstring,
+        'imagelist':imagelist,
         'similar_products':similar_products,
     }
 

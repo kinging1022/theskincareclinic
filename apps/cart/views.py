@@ -5,17 +5,34 @@ from .cart import Cart
 
 def cart(request):
     cart = Cart(request)
-    productstring = ''
+    products_list = []
 
     for item in cart:
         product = item['product']
-        url = '/%s/%s' % (product.category.slug, product.slug)
-        b = "{'id': '%s', 'title': '%s', 'price': '%s', 'quantity': '%s', 'total_price': '%s', 'thumbnail': '%s', 'url': '%s', 'num_available': '%s'}," % (product.id, product.title, product.price, item['quantity'], item['total_price'], product.get_thumbnail(), url, product.num_available)
+        
+        
+        url = f"/{product.category.slug}/{product.slug}/"
+        print(f"Constructed URL: {url}") 
 
-        productstring = productstring + b
+        product_details = {
+            'id': product.id,
+            'title': product.title,
+            'price': product.price,
+            'quantity': item['quantity'],
+            'total_price': item['total_price'],
+            'thumbnail': product.get_thumbnail(), 
+            'url': url,
+            'num_available': product.num_available,
+        }
+        
+                 
+        
+        
+
+        products_list.append(product_details) 
 
 
-    context = {'cart':cart, 'productstring':productstring}
+    context = {'cart':cart, 'products_list':products_list}
     return render(request,'cart/cart.html',context)
 
 
