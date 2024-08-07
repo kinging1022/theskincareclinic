@@ -1,0 +1,70 @@
+{% extends 'core/base.html' %}
+{% block title %}Search| {% endblock %}
+{% block contents %}
+  <h1 class="h1 title">Search</h1>
+  <h2 class="h2 subtitle">Search term: "{{ query }}"</h2>
+
+  <hr>
+
+  <form method="get" action="{% url 'search' %}">
+    <div class="row">
+      <div class="col-md-4">
+        <h3 class="h3">Query</h3>
+
+        <div class="form-group">
+          <label for="query">Search term</label>
+          <input type="text" class="form-control" name="query" id="query" value="{{ query }}">
+        </div>
+
+        <div class="form-group form-check">
+          <input type="checkbox" class="form-check-input" name="instock" id="instock" {% if instock %}checked{% endif %}>
+          <label class="form-check-label" for="instock">In stock</label>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <h3 class="h3">Price range</h3>
+
+        <div class="form-group">
+          <label for="price_from">From</label>
+          <input type="number" class="form-control" name="price_from" id="price_from" value="{{ price_from }}">
+        </div>
+
+        <div class="form-group">
+          <label for="price_to">To</label>
+          <input type="number" class="form-control" name="price_to" id="price_to" value="{{ price_to }}">
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <h3 class="h3">Sorting</h3>
+
+        <div class="form-group">
+          <label for="sorting">Select sorting criteria</label>
+          <select class="form-control" name="sorting" id="sorting">
+            <option value="-date_added"{% if sorting == '-date_added' %} selected{% endif %}>Newest first</option>
+            <option value="price"{% if sorting == 'price' %} selected{% endif %}>Price low-high</option>
+            <option value="-price"{% if sorting == '-price' %} selected{% endif %}>Price high-low</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </div>
+  </form>
+
+  <hr>
+
+  {% with products as list_products %}
+        {% include 'parts/product_list.html' %}
+    {% endwith %}
+{% endblock %}
+
+
+
+
+

@@ -3,6 +3,46 @@ from .models import Category ,BrandCategory,Product
 from apps.cart.cart import Cart
 # Create your views here.
 
+from django.db.models import Q
+from datetime import datetime
+import random
+
+def search(request):
+    query = request.GET.get('query','')
+    instock = request.GET.get('instock','')
+    try:
+        price_from = int(request.GET.get('price_from',0))
+    except ValueError:
+        price_from = 0
+
+    try:
+        price_to = int(request.GET.get('price_to', 20000))
+    except ValueError:
+        price_to = 20000
+    
+    sorting = request.GET.get('sorting', '-date_added')
+    products = Product.objects.filter(Q(title__icontains=query) | Q(description__icontains=query)).filter(price__gte=price_from).filter(price__lte=price_to)
+
+
+    if instock:
+        products = products.filter(num_available__gte=1)
+
+    context = {
+    'query': query,
+    'products': products.order_by(sorting),
+    'instock':instock,
+    'price_from':price_from,
+    'price_to':price_to,
+    'sorting':sorting,
+    }
+        
+    return render(request, 'store/search.html', context)
+
+    
+
+
+
+
 def category_details(request,slug):
     category = get_object_or_404(Category,slug=slug)
     products = category.products.filter(parent=None)
@@ -15,6 +55,9 @@ def category_details(request,slug):
 def product_details(request,category_slug,slug):
     product = get_object_or_404(Product,slug=slug)
     similar_products = product.category.products.all()
+    product.num_visits = product.num_visits + 1
+    product.last_visits = datetime.now()
+    product.save()
 
     imagelist = []
     
