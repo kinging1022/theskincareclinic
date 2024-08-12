@@ -1,13 +1,13 @@
 {% extends 'core/base.html' %}
-{% block title %} cart | {% endblock %}
+{% block title %}Cart | {% endblock %}
 
 {% block contents %}
 <div class="container mt-5" id="cart-app">
-    <h1 class="display-5">Cart</h1>
+    <h1 class="display-5 text-center mb-4">Cart</h1>
 
     <div v-if="products.length > 0">
-        <table class="table">
-            <thead>
+        <table class="table table-bordered">
+            <thead class="table-dark">
                 <tr>
                     <th></th>
                     <th>Product</th>
@@ -19,19 +19,19 @@
             <tbody>
                 <tr v-for="product in products" :key="product.id">
                     <td>
-                        <img :src="product.thumbnail" alt="" class="img-thumbnail" style="max-width: 40px;">
+                        <img :src="product.thumbnail" alt="" class="img-thumbnail" style="max-width: 60px;">
                     </td>
                     <td>
-                        <a :href="product.url">[[ product.title ]]</a>
+                        <a :href="product.url" class="text-decoration-none">[[ product.title ]]</a>
                     </td>
                     <td>
-                        <button @click="decrement(product.id, product.quantity, product.price)"> - </button>
+                        <button @click="decrement(product.id, product.quantity, product.price)" class="btn btn-sm btn-outline-secondary">-</button>
                         [[ product.quantity ]]
-                        <button @click="increment(product.id, product.quantity, product.price)"> + </button>
+                        <button @click="increment(product.id, product.quantity, product.price)" class="btn btn-sm btn-outline-secondary">+</button>
                     </td>
                     <td>[[ product.total_price ]]</td>
                     <td>
-                        <button @click="remove(product.id, product.quantity, product.price)">Remove from cart</button>
+                        <button @click="remove(product.id, product.quantity, product.price)" class="btn btn-danger btn-sm text-center"> X </button>
                     </td>
                 </tr>
             </tbody>
@@ -45,24 +45,24 @@
                 </tr>
                 <tr v-if="coupon_value">
                     <td colspan="3">Total with coupon</td>
-                    <td>[[totalCostWithCoupon]]</td>
+                    <td>[[ totalCostWithCoupon ]]</td>
                 </tr>
             </tfoot>
         </table>
         <hr>
-        <div>
-            Code value: <br>
-            <input type="text" v-model="coupon_code"> <br>
-            <button @click="applyCoupon()">Apply</button>
+        <div class="my-4">
+            <label for="coupon_code" class="form-label">Code value:</label>
+            <input type="text" id="coupon_code" class="form-control mb-2" v-model="coupon_code">
+            <button @click="applyCoupon()" class="btn btn-primary">Apply</button>
         </div>
         <div class="alert alert-warning" role="alert" v-if="showCouponCodeError">
             <p>The coupon code is not valid!</p>
         </div>
-        
 
         <div class="container my-5">
+            <h2 class="h4 mb-4">Checkout</h2>
             <div class="row">
-                <div class="col-lg-6 col-md-12 col-sm-12">
+                <div class="col-lg-6 col-md-8 col-sm-12 mx-auto">
                     <form @submit.prevent="validateForm()">
                         <div class="mb-3">
                             <label for="first_name" class="form-label">First Name</label>
@@ -74,7 +74,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="text" name="email" id="email" class="form-control" v-model="email">
+                            <input type="email" name="email" id="email" class="form-control" v-model="email">
                         </div>
                         <div class="mb-3">
                             <label for="address" class="form-label">Address</label>
@@ -85,7 +85,7 @@
                             <input type="text" name="phone" id="phone" class="form-control" v-model="phone">
                         </div>
                         <div class="mb-3">
-                            <button class="btn btn-success" @click="buy()">Check out</button>
+                            <button class="btn btn-success w-100" @click="buy()">Check out</button>
                         </div>
                     </form>
                 </div>
@@ -93,7 +93,7 @@
         </div>
     </div>
 
-    <p v-else>Your cart is empty</p>
+    <p v-else class="text-center">Your cart is empty</p>
 </div>
 {% endblock %}
 

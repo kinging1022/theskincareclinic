@@ -2,7 +2,7 @@
 {% block title %}{{category.title}}|{% endblock %}
 
 {% block contents %}
-    <h3 class="mt-3 text-center ">{{category.title}}</h3>
+    <h3 class="category-title">{{category.title}}</h3>
     {% with products as list_products %}
         {% include 'parts/product_list.html' %}
     {% endwith %}

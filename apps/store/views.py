@@ -45,7 +45,7 @@ def search(request):
 
 def category_details(request,slug):
     category = get_object_or_404(Category,slug=slug)
-    products = category.products.filter(parent=None)
+    products = category.products.all()
 
 
 
