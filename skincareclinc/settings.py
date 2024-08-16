@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['4786-102-88-82-111.ngrok-free.app','127.0.0.1']
+ALLOWED_HOSTS = ['8638-102-88-43-113.ngrok-free.app','127.0.0.1']
 
 load_dotenv()
 env = environ.Env()
@@ -42,6 +42,7 @@ EMAIL_PORT = 465
 EMAIL_HOST_USER = 'emmanuelemmy0906@gmail.com'
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'emmanuelemmy0906@gmail.com'
+EMAIL_TIMEOUT = 60 
 
 
 #cart
@@ -69,6 +70,7 @@ INSTALLED_APPS = [
     'apps.cart',
     'apps.order',
     'apps.coupon',
+    'apps.delivery',
     'django.contrib.sitemaps',
 
 ]

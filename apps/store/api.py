@@ -18,6 +18,14 @@ def api_create_checkout_session(request):
             
             data = json.loads(request.body)
             
+            delivery_price  = data['delivery_price']
+
+            if delivery_price == "":
+                delivery_amount = 0
+            else:
+                delivery_amount = delivery_price
+
+            
             coupon_code = data['coupon_code']
             coupon_value = 0
 
@@ -31,10 +39,10 @@ def api_create_checkout_session(request):
             order_id = checkout(request, data['first_name'],data['last_name'],data['email'],data['address'],data['phone'])
             
             
-            total_cost = cart.get_total_cost()
+            total_cost = cart.get_total_cost() + float(delivery_amount)
             if coupon_value > 0:
                 amount = total_cost - coupon_value
-                print(amount)
+                
             else:
                 amount = total_cost
             
@@ -48,7 +56,8 @@ def api_create_checkout_session(request):
                 metadata = json.dumps({
                     "order_id" : order_id,
                     "cancel_action": 'http://127.0.0.1:8000/cart/',
-                    "coupon_code": coupon_code
+                    "coupon_code": coupon_code,
+                    "delivery_price" : delivery_price
 
                 })
 

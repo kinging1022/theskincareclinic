@@ -10,4 +10,4 @@ def frontpage(request):
 
     context={'products':featured_products, 'brands_category':brands}
 
-    return render(request,'core/frontpage1.html',context)
+    return render(request,'core/frontpage.html',context)

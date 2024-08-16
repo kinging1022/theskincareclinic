@@ -73,6 +73,7 @@ class Product(models.Model):
     last_visits = models.DateTimeField(blank=True, null=True)
     image = models.ImageField(upload_to='uploads/', blank=True, null=True)
     thumbnail = models.ImageField(upload_to='uploads/', blank=True, null=True)
+    weight = models.PositiveIntegerField()
 
 
 

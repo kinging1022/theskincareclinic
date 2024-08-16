@@ -19,7 +19,7 @@
             <tbody>
                 <tr v-for="product in products" :key="product.id">
                     <td>
-                        <img :src="product.thumbnail" alt="" class="img-thumbnail" style="max-width: 60px;">
+                        <img :src="product.thumbnail" alt="" class="img-thumbnail" style="max-width: 50px;">
                     </td>
                     <td>
                         <a :href="product.url" class="text-decoration-none">[[ product.title ]]</a>
@@ -47,9 +47,14 @@
                     <td colspan="3">Total with coupon</td>
                     <td>[[ totalCostWithCoupon ]]</td>
                 </tr>
+                <tr v-if="deliveryPrice">
+                    <td colspan="3">Total with delivery</td>
+                    <td>[[ totalCostWithDelivery ]]</td>
+                </tr>
             </tfoot>
         </table>
         <hr>
+        
         <div class="my-4">
             <label for="coupon_code" class="form-label">Code value:</label>
             <input type="text" id="coupon_code" class="form-control mb-2" v-model="coupon_code">
@@ -58,6 +63,46 @@
         <div class="alert alert-warning" role="alert" v-if="showCouponCodeError">
             <p>The coupon code is not valid!</p>
         </div>
+        
+        <div class=" my-4">
+            <label class="form-label">Choose Delivery Option:</label>
+            <div>
+                <input type="radio" id="pick_up" value="pick_up" v-model="deliveryOption" @change="handleDeliveryOptionChange()">
+                <label for="pick_up">Pick Up</label>
+            </div>
+            <div>
+                <input type="radio" id="delivery" value="delivery" v-model="deliveryOption" @change="handleDeliveryOptionChange()">
+                <label for="delivery">Delivery</label>
+            </div>
+        </div>
+
+        <div v-if=" deliveryOption == 'delivery' ">
+            <div class="my-4">
+                <div class="mb-3">
+                    <label for="location" class="form-label">Delivery Location</label>
+                    <select name="location" id="location" class="form-control" v-model="selectedLocation" @change="getArea()">
+                        <option value="">Select Location</option>
+                        {% for location in locations %}
+                        <option value="{{location.location}}">{{location.location}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="area" class="form-label">Area</label>
+                    <select name="area" id="area" class="form-control" v-model="area" @change="getDeliveryPrice()">
+                        <option v-for="area in areas" :key="area.id" :value="area.title">[[area.title]]</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="delivery_price" class="form-label">Delivery Price</label>
+                    <input type="text" id="delivery_price" class="form-control" :value="deliveryPrice" readonly>
+                </div>
+                
+            </div>
+
+        </div>
+        <p v-else> Send your receipt to our customer care after payment for pick up details </p>
+        
 
         <div class="container my-5">
             <h2 class="h4 mb-4">Checkout</h2>
@@ -88,6 +133,7 @@
                             <button class="btn btn-success w-100" @click="buy()">Check out</button>
                         </div>
                     </form>
+                    
                 </div>
             </div>
         </div>
@@ -112,7 +158,15 @@
                 phone: '',
                 coupon_value:0,
                 coupon_code:'',
-                showCouponCodeError:false
+                showCouponCodeError:false,
+                selectedLocation: '',
+                deliveryPrice: '',
+                deliveryOption:'pick_up',
+                areas: [
+                    {'id': '','title': 'Select location first'}
+                ] ,
+                area : '',
+                
             };
         },
         mounted() {
@@ -127,44 +181,135 @@
             totalCost() {
                 return store.state.totalCost;
             },
-            totalCostWithCoupon: function(){
-                if (this.coupon_value > 0){
-                    return store.state.totalCost - parseInt(this.coupon_value)
-                }else{
-                    return store.state.totalCost;
+            totalCostWithCoupon: function() {
+                    const totalCost = parseFloat(store.state.totalCost) || 0;
+                    const couponValue = parseFloat(this.coupon_value) || 0;
+                    const finalTotal = totalCost - couponValue;
+                    return Math.max(finalTotal, 0).toFixed(2); 
+                },
+
+            totalCostWithDelivery: function() {
+                const totalCost = parseFloat(store.state.totalCost) || 0;
+                const deliveryPrice = parseFloat(this.deliveryPrice) || 0;
+                const couponValue = parseFloat(this.coupon_value) || 0;
+
+                let finalTotal = totalCost;
+
+                if (deliveryPrice > 0) {
+                    finalTotal += deliveryPrice;
                 }
-            }
+
+                if (couponValue > 0) {
+                    finalTotal -= couponValue;
+                }
+
+                return finalTotal.toFixed(2); // Returns the value as a string with 2 decimal places
+            },
+
+
         },
         methods: {
-            validateForm() {
+            validateForm(){
                 this.errors = [];
                 if (this.first_name === '') this.errors.push('First name is empty');
                 if (this.last_name === '') this.errors.push('Last name is empty');
-                if (this.email === '') this.errors.push('Email is empty');
+                if (this.email === '') {
+                    this.errors.push('Email is empty');
+                } else if (!this.validEmail(this.email)) {
+                    this.errors.push('Invalid email address');
+                }
                 if (this.address === '') this.errors.push('Address is empty');
                 if (this.phone === '') this.errors.push('Phone is empty');
                 return this.errors.length;
+
             },
-            applyCoupon(){
-                if (this.coupon_code !== " "){
-                    fetch('/api/can_use/?coupon_code='+ this.coupon_code,{
-                        method: 'GET'
-                    })
-                    .then((response) =>{
-                        return response.json();
-                    })
-                    .then((data)=>{
-                        if (data.amount){
-                            this.showCouponCodeError = false
-                            this.coupon_value = parseInt(data.amount)
-                        }else{
-                            this.coupon_value = 0
-                            this.showCouponCodeError = true
+            validEmail(email){
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+
+            },
+
+            handleDeliveryOptionChange() {
+                if (this.deliveryOption === 'pick_up') {
+                    this.deliveryPrice = "";
+                    this.selectedLocation = '';
+                    this.area = '';
+                    this.areas = [{'id':'', 'title':'Select location first'}];
+                }
+
+            },    
+            getArea(){
+                if (this.selectedLocation !== ''){
+                    this.deliveryPrice = ''; 
+                    this.area = '';
+                    fetch('/api/get_areas/?location='+ encodeURIComponent(this.selectedLocation),{
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
                         }
                     })
+                    .then((response)=>{
+                        return response.json()
+                    })
+                    .then((result)=>{
+                        this.areas = result.areas
+                        console.log(this.areas)
+                        console.log(result)
+                        this.areas.unshift({'id':'', 'title':'Select area'})
+                        
+                    })
                 }else{
-                    this.showCouponCodeError = true
+                    this.areas = [{'id':'', 'title': 'Select location first'}]
+                    this.area = ''
                 }
+
+            },
+            getDeliveryPrice(){
+                if (this.area !== ''){
+                    fetch('/api/get_delivery_price/?area='+ encodeURIComponent(this.area),{
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then((response)=>{
+                        return response.json()
+                    })
+                    .then((result) => {
+                        const parsedPrice = parseFloat(result.delivery_price);
+                        this.deliveryPrice = isNaN(parsedPrice) ? 0 : parsedPrice;
+                        console.log(this.deliveryPrice);
+                        console.log(result);
+                    })
+                    .catch((error) => {
+                        console.error('Error fetching delivery price:', error);
+                        this.deliveryPrice = 0; 
+                    });
+                }else{
+                    this.deliveryPrice = 0
+                }
+
+            },
+            applyCoupon(){
+                const trimmedCouponCode = this.coupon_code.trim();
+                if (trimmedCouponCode !== "") {
+                    fetch('/api/can_use/?coupon_code=' + encodeURIComponent(trimmedCouponCode), {
+                        method: 'GET'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.amount) {
+                            this.showCouponCodeError = false;
+                            this.coupon_value = parseInt(data.amount);
+                        } else {
+                            this.coupon_value = 0;
+                            this.showCouponCodeError = true;
+                        }
+                    });
+                } else {
+                    this.showCouponCodeError = true;
+                }
+
             },
              buy() {
                 const data = {
@@ -173,7 +318,8 @@
                     'email': this.email,
                     'phone': this.phone,
                     'address': this.address,
-                    'coupon_code': this.coupon_code
+                    'coupon_code': this.coupon_code,
+                    'delivery_price': this.deliveryPrice
                 };
                 if (this.validateForm() === 0) {
                     fetch('/api/create_checkout_session/', {
@@ -208,7 +354,7 @@
                             const data = {
                                 'product_id': product_id,
                                 'update': true,
-                                'quantity': parseInt(quantity + 1)
+                                'quantity': Number(quantity) + 1
                             };
                             store.commit('increment', 1);
                             store.commit('changeTotalCost', parseFloat(price));

@@ -2,7 +2,9 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from apps.order.views import render_to_pdf
 from django.conf import settings
+from django.db import transaction
 import logging
+from apps.cart.cart import Cart
 
 logger = logging.getLogger(__name__)
 
@@ -11,10 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 def decrement_product_quantity(order):
-    for item in order.items.all():
-        product = item.product
-        product.num_available = product.num_available - item.quantity
-        product.save()
+    with transaction.atomic():
+        for item in order.items.all():
+            product = item.product
+            product.num_available = product.num_available - item.quantity
+            product.save()
 
 
 
@@ -31,7 +34,7 @@ def send_order_confirmation(order):
 
 
     if pdf:
-        name = 'order_%s.pdf' % order.id
+        name = f'order_{order.first_name}.pdf'
         msg.attach(name,pdf,'application/pdf')
 
 

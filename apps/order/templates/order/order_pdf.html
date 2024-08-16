@@ -31,7 +31,7 @@
     </head>
 
     <body>
-        <div class="wrapper">
+        <div id="pdf-app" class="wrapper">
             <h1>Invoice #{{ order.id }}</h1>
 
             <h2>Shipping address</h2>
@@ -39,7 +39,7 @@
             <p>
                 {{ order.first_name }} {{ order.last_name }}<br>
                 {{ order.address }}<br>
-                {{ order.zipcode }} {{ order.place }}
+                {{ order.email }} 
             </p>
 
             <h2>Products</h2>
@@ -66,17 +66,56 @@
                         <td>{{ item.price }}</td>
                     </tr>
                 {% endfor %}
-
+                {% if not order.used_coupon %}
                 <tr class="footer">
                     <td></td>
                     <td colspan="3">Total</td>
-                    <td>{{ order.paid_amount }}</td>
+                    <td>{{order.paid_amount}}</td>
                 </tr>
+                {% else %}
+                <tr class="footer">
+                    <td></td>
+                    <td>Total</td>
+                    <td>Coupon used</td>
+                    <td>{{order.used_coupon}}</td>
+                    <td>{{order.paid_amount}}</td>
+                </tr>
+                {% endif %}
+
             </table>
 
-            <h2>Shop</h2>
+            <h2>The skincare clinic</h2>
 
             <p>Thanks for ordering from us!</p>
         </div>
     </body>
 </html>
+{% block scripts %}
+<script>
+
+    createApp({
+        data() {
+            return {  
+                
+                
+            };
+        },
+        mounted() {
+            
+        },
+        delimiters: ['[[', ']]'],
+        store: store,
+        computed: {
+            numItems() {
+                return store.state.numItems;
+            },
+            totalCost() {
+                return store.state.totalCost;
+            },
+        },
+        methods: {
+           
+        }
+    }).mount('#pdf-app');
+</script>
+{% endblock %}

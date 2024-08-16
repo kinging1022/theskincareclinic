@@ -46,7 +46,7 @@
             <tr>
                 <td>
                     {% for item in order.items.all %}
-                        <p><strong>{{ item.product.title }}</strong> - Quantity: {{ item.quantity }} - Price: ${{ item.product.price }}</p>
+                        <p><strong>{{ item.product.title }}</strong> - Quantity: {{ item.quantity }} - Price: {{ item.product.price }}</p>
                     {% endfor %}
                 </td>
             </tr>

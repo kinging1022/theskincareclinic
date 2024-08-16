@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .cart import Cart
+from apps.delivery.models import Location
 
 # Create your views here.
 
@@ -12,7 +13,7 @@ def cart(request):
         
         
         url = f"/{product.category.slug}/{product.slug}/"
-        print(f"Constructed URL: {url}") 
+        
 
         product_details = {
             'id': product.id,
@@ -25,14 +26,15 @@ def cart(request):
             'num_available': product.num_available,
         }
         
+
                  
         
         
 
         products_list.append(product_details) 
 
-
-    context = {'cart':cart, 'products_list':products_list}
+    locations = Location.objects.all()
+    context = {'cart':cart, 'products_list':products_list, 'locations':locations}
     return render(request,'cart/cart.html',context)
 
 

@@ -4,7 +4,7 @@ from apps.cart.cart import Cart
 # Create your views here.
 
 from django.db.models import Q
-from datetime import datetime
+from django.utils import timezone
 import random
 
 def search(request):
@@ -56,7 +56,7 @@ def product_details(request,category_slug,slug):
     product = get_object_or_404(Product,slug=slug)
     similar_products = product.category.products.all()
     product.num_visits = product.num_visits + 1
-    product.last_visits = datetime.now()
+    product.last_visits = timezone.now()
     product.save()
 
     imagelist = []

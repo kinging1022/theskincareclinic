@@ -30,12 +30,20 @@ def paystack_webhook(request):
         metadata = event['data']['metadata']
         order_id = metadata.get('order_id', '')
         coupon_used = metadata.get('coupon_code','')
+        paid_delivery = metadata.get('delivery_price', '0')
 
         try:
             order = Order.objects.get(pk=order_id)
             if event['event'] == 'charge.success':
+                amount = float(event['data']['amount'])/100
+                try:
+                    delivery_amount = float(paid_delivery)
+                except ValueError:
+                    delivery_amount = 0.0
+                
                 order.paid = True
-                order.paid_amount = float(event['data']['amount']/100)
+                order.paid_amount = amount - delivery_amount
+                order.delivery_amount = delivery_amount
                 order.transaction_ref = event['data']['reference']
                 order.used_coupon = coupon_used
                 order.save()

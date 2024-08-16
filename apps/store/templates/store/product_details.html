@@ -68,6 +68,7 @@
                     mainImage: '{{ product.image.url }}',
                     images: {{ imagelist | safe }},
                     showMessage: false,
+                    referrer: document.referrer,
                 };
             },
             mounted() {
@@ -102,7 +103,8 @@
 
                         setTimeout(() => {
                             this.showMessage = false;
-                        }, 2000);
+                            window.location.href = this.referrer || '/'; 
+                        }, 1000);
                     })
                     .catch(function(error) {
                         console.log('Error:', error);
